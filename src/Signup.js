@@ -1,29 +1,34 @@
 import React, { useEffect, useState } from "react"
+
 const Signup = () => {
     const [user, setUser] = useState({})
-    const [allUsers, setUsers] = useState([])
+    const [allUsers, setAllUsers] = useState([])
+
+    console.log(process.env)
 
     useEffect(() => {
-        fetch('http://localhost:5000/users')
+        fetch(`${process.env.REACT_APP_API_ENDPOINT}/users`)
         .then(rawData => rawData.json())
-        .then(allUsers => console.log(allUsers))
+        .then(allUsers => setAllUsers(allUsers))
         .catch(err => console.log(err))
     }, [])
 
     const handleUserPost = () => {
-        fetch('http://localhost:5000/users', {
+        fetch(`${process.env.REACT_APP_API_ENDPOINT}/users`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify(user)
+            body: JSON.stringify(user),
         })
-        .then(response => response.json())
-        .then(data => console.log('Success: ', data))
+        .then(rawData => rawData.json())
+        .then(data => localStorage.setItem('user', JSON.stringify(data)))
         .catch(err => console.log(err))
+
+        //window.location.reload(false)
     }
 
-    const handleUserForm = (e) => {
+    const handleUserForm = () => {
 
         setUser({...user, [e.target.name]: e.target.value })
 
@@ -32,6 +37,7 @@ const Signup = () => {
     return (
     <>
     <h2>Sign Up Here</h2>
+    <span>{process.env.NODE_ENV}</span>
     <input type="text" name="fname" placeholder="First Name" onChange={handleUserForm} /> 
     <input type="text" name="lname" placeholder="Last Name" onChange={handleUserForm}/>
     <input type="email" name="email" placeholder="Your Email Here" onChange={handleUserForm}/>
@@ -40,13 +46,18 @@ const Signup = () => {
 
     {allUsers && allUsers.map(eachUser => {
         return (
-            <>
+            <div key={eachUser.id}>
             <span>{eachUser.fname}</span>
             <span>{eachUser.lname}</span>
             <span>{eachUser.email}</span>
-            </>
+            </div>
         )
     })}
+    <button onClick={() => localStorage.clear()}>clear local storage</button>
+    <button onClick={() => {
+        //const localUser = localStorage.getItem('user')
+        console.log(JSON.parse(localStorage.getItem('user')))
+    }}>get local storage</button>
     </>
     )
 }
